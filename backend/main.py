@@ -1,22 +1,25 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
 from openai import OpenAI
+from pathlib import Path
 
-
+UPLOAD_DIR = Path() / 'uploads'
 
 app = FastAPI()
-
 client = OpenAI()
 
-completion = client.chat.completions.create(
-  model="gpt-3.5-turbo",
-  messages=[
-    {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
-    {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
-  ]
-)
+
+@app.post('/uploadfile/')
+async def create_upload_file(file_upload: UploadFile):
+    data = await file_upload.read()
+    save_to = UPLOAD_DIR / file_upload.filename
+    with open(save_to, 'wb') as f:
+        f.write(data)
+    return {"filename": file_upload.filename}
+
+
 
 @app.get("/api")
 async def root():
-    
-    return completion.choices[0].message.content
+    return ""
+
